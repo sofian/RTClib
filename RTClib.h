@@ -1,5 +1,25 @@
-// Code by JeeLabs http://news.jeelabs.org/code/
-// Released to the public domain! Enjoy!
+/*
+ * RTCLib.h
+ *
+ * Original code by JeeLabs http://news.jeelabs.org/code/
+ * Based on LadyAda's version https://github.com/adafruit/RTClib
+ * Millisecond hack by Sofian Audry -- info(@)sofianaudry(.)com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef RTCLIB_H_
+#define RTCLIB_H_
 
 // Simple general-purpose date/time class (no TZ / DST / leap second handling!)
 class DateTime {
@@ -53,3 +73,5 @@ protected:
     static long offset;
     static long offsetms;
 };
+
+#endif
