@@ -57,5 +57,28 @@ void loop () {
     Serial.println();
     
     Serial.println();
+    
+    // check milliseconds
+    for (int i=0; i<10; i++) {
+      now = RTC.now();
+      
+      Serial.print(now.year(), DEC);
+      Serial.print('/');
+      Serial.print(now.month(), DEC);
+      Serial.print('/');
+      Serial.print(now.day(), DEC);
+      Serial.print(' ');
+      Serial.print(now.hour(), DEC);
+      Serial.print(':');
+      Serial.print(now.minute(), DEC);
+      Serial.print(':');
+      Serial.print(now.second(), DEC);
+      Serial.print(':');
+      Serial.print(now.millis(), DEC);
+      Serial.println();
+      
+      delay(100);
+    }
+
     delay(3000);
 }

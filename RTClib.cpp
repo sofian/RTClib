@@ -61,9 +61,11 @@ DateTime::DateTime (uint32_t t) {
         days -= daysPerMonth;
     }
     d = days + 1;
+    
+    ms = 0;
 }
 
-DateTime::DateTime (uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec) {
+DateTime::DateTime (uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec, uint16_t millisec) {
     if (year >= 2000)
         year -= 2000;
     yOff = year;
@@ -72,6 +74,7 @@ DateTime::DateTime (uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uin
     hh = hour;
     mm = min;
     ss = sec;
+    ms = millisec;
 }
 
 static uint8_t conv2d(const char* p) {
@@ -102,6 +105,7 @@ DateTime::DateTime (const char* date, const char* time) {
     hh = conv2d(time);
     mm = conv2d(time + 3);
     ss = conv2d(time + 6);
+    ms = 0;
 }
 
 uint8_t DateTime::dayOfWeek() const {    
@@ -150,6 +154,9 @@ void RTC_DS1307::adjust(const DateTime& dt) {
     Wire.send(bin2bcd(dt.year() - 2000));
     Wire.send(0);
     Wire.endTransmission();
+    
+    prevUnixtime = dt.unixtime();
+    prevMillis = millis();
 }
 
 DateTime RTC_DS1307::now() {
@@ -166,8 +173,22 @@ DateTime RTC_DS1307::now() {
   uint8_t m = bcd2bin(Wire.receive());
   uint16_t y = bcd2bin(Wire.receive()) + 2000;
   
-  return DateTime (y, m, d, hh, mm, ss);
+  DateTime dt (y, m, d, hh, mm, ss);
+
+  unsigned long curms = millis();
+  long ms = (curms - prevMillis);
+  ms -= (dt.unixtime() - prevUnixtime) * 1000;
+  ms = constrain(ms, 0, 999);
+
+  dt.ms = ms;  
+  prevUnixtime = dt.unixtime();
+  prevMillis = curms;
+    
+  return dt;
 }
+
+unsigned long RTC_DS1307:: prevMillis = 0;
+uint32_t RTC_DS1307:: prevUnixtime = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RTC_Millis implementation
@@ -175,11 +196,16 @@ DateTime RTC_DS1307::now() {
 long RTC_Millis::offset = 0;
 
 void RTC_Millis::adjust(const DateTime& dt) {
-    offset = dt.unixtime() - millis() / 1000;
+  offsetms = millis();
+    offset = dt.unixtime() - offsetms / 1000;
+    offsetms %= 1000; // just keep the milliseconds part
 }
 
 DateTime RTC_Millis::now() {
-  return (uint32_t)(offset + millis() / 1000);
+  unsigned long time = millis();
+  DateTime dt((uint32_t)(offset + time / 1000));
+  dt.ms = time;
+  return dt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
