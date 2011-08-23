@@ -21,6 +21,8 @@
 #ifndef RTCLIB_H_
 #define RTCLIB_H_
 
+#include <WProgram.h>
+
 // Simple general-purpose date/time class (no TZ / DST / leap second handling!)
 class DateTime {
 public:

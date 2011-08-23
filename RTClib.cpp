@@ -21,7 +21,6 @@
 #include "RTClib.h"
 #include <Wire.h>
 #include <avr/pgmspace.h>
-#include <WProgram.h>
 
 #define DS1307_ADDRESS 0x68
 #define SECONDS_PER_DAY 86400L
