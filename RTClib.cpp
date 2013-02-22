@@ -27,10 +27,26 @@
 
 #define SECONDS_FROM_1970_TO_2000 946684800
 
+#ifndef WIRE_WRITE
+#if ARDUINO >= 100
+#define WIRE_WRITE write
+#else
+#define WIRE_WRITE send
+#endif
+#endif
+
+#ifndef WIRE_READ
+#if ARDUINO >= 100
+#define WIRE_READ read
+#else
+#define WIRE_READ receive
+#endif
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // utility code, some of this could be exposed in the DateTime API if needed
 
-static uint8_t daysInMonth [] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+static const uint8_t daysInMonth [] PROGMEM = { 31,28,31,30,31,30,31,31,30,31,30,31 };
 
 // number of days since 2000/01/01, valid for 2001..2099
 static uint16_t date2days(uint16_t y, uint8_t m, uint8_t d) {
@@ -150,25 +166,25 @@ uint8_t RTC_DS1307::begin(void) {
 
 uint8_t RTC_DS1307::isrunning(void) {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.send(0);	
+  Wire.WIRE_WRITE(0);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
-  uint8_t ss = Wire.receive();
+  uint8_t ss = Wire.WIRE_READ();
   return !(ss>>7);
 }
 
 void RTC_DS1307::adjust(const DateTime& dt) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.send(0);
-    Wire.send(bin2bcd(dt.second()));
-    Wire.send(bin2bcd(dt.minute()));
-    Wire.send(bin2bcd(dt.hour()));
-    Wire.send(bin2bcd(0));
-    Wire.send(bin2bcd(dt.day()));
-    Wire.send(bin2bcd(dt.month()));
-    Wire.send(bin2bcd(dt.year() - 2000));
-    Wire.send(0);
+    Wire.WIRE_WRITE(0);
+    Wire.WIRE_WRITE(bin2bcd(dt.second()));
+    Wire.WIRE_WRITE(bin2bcd(dt.minute()));
+    Wire.WIRE_WRITE(bin2bcd(dt.hour()));
+    Wire.WIRE_WRITE(bin2bcd(0));
+    Wire.WIRE_WRITE(bin2bcd(dt.day()));
+    Wire.WIRE_WRITE(bin2bcd(dt.month()));
+    Wire.WIRE_WRITE(bin2bcd(dt.year() - 2000));
+    Wire.WIRE_WRITE(0);
     Wire.endTransmission();
     
     prevUnixtime = dt.unixtime();
@@ -177,17 +193,17 @@ void RTC_DS1307::adjust(const DateTime& dt) {
 
 DateTime RTC_DS1307::now() {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.send(0);	
+  Wire.WIRE_WRITE(0);
   Wire.endTransmission();
   
   Wire.requestFrom(DS1307_ADDRESS, 7);
-  uint8_t ss = bcd2bin(Wire.receive() & 0x7F);
-  uint8_t mm = bcd2bin(Wire.receive());
-  uint8_t hh = bcd2bin(Wire.receive());
-  Wire.receive();
-  uint8_t d = bcd2bin(Wire.receive());
-  uint8_t m = bcd2bin(Wire.receive());
-  uint16_t y = bcd2bin(Wire.receive()) + 2000;
+  uint8_t ss = bcd2bin(Wire.WIRE_READ() & 0x7F);
+  uint8_t mm = bcd2bin(Wire.WIRE_READ());
+  uint8_t hh = bcd2bin(Wire.WIRE_READ());
+  Wire.WIRE_READ();
+  uint8_t d = bcd2bin(Wire.WIRE_READ());
+  uint8_t m = bcd2bin(Wire.WIRE_READ());
+  uint16_t y = bcd2bin(Wire.WIRE_READ()) + 2000;
   
   DateTime dt (y, m, d, hh, mm, ss);
 
